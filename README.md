@@ -65,4 +65,4 @@ We performed the spacial joins with this data set and the generated data.
 
 This our first visualization:
 
-![CCTransactionMechantStatic.png](assets/CC Transaction Mechant Static.png?t=1709385626284)
+![CCTransactionMerchantStatic.png](assets/cc_transaction_merchant_static.png)
