@@ -26,22 +26,31 @@ borough_boundaries = {
 }
 
 # Create an empty DataFrame to store transaction data
-transactions_df = pd.DataFrame(
-    columns=['Transaction ID', 'Date', 'Amount', 'Latitude', 'Longitude', 'User ID', 'Status'])
+transactions_df = pd.DataFrame(columns=['Transaction ID', 'Date', 'Amount', 'Latitude', 'Longitude', 'User ID', 'Status', 'Merchant ID'])
 
-# Generate transactions for each borough
-for borough, percentage in distributions.items():
-    n_points = int(total_points * percentage)
+# Generate User IDs and Merchant IDs
+user_ids = np.random.randint(1_000_000, 10_000_000, size=int(total_points * 0.9))
+user_ids = np.append(user_ids, np.random.choice(user_ids, size=int(total_points * 0.1))) # 10% repeats
+merchant_ids_base = np.random.randint(10_000_000, 100_000_000, size=int(total_points * 0.25))
+merchant_ids = np.append(merchant_ids_base, np.random.choice(merchant_ids_base, size=total_points - len(merchant_ids_base))) # 75% repeats
+
+# Ensure arrays are shuffled to avoid any unintentional ordering
+np.random.shuffle(user_ids)
+np.random.shuffle(merchant_ids)
+
+# Generate transactions
+for borough, bounds in borough_boundaries.items():
+    n_points = int(distributions[borough] * total_points)
     for i in range(n_points):
         transaction_id = np.random.randint(10000000, 99999999)
         date = pd.Timestamp('2023-08-01') + pd.to_timedelta(np.random.randint(1, 31), unit='D')
         amount = np.random.uniform(5, 500)
-        lat = np.random.uniform(borough_boundaries[borough]['lat'][0], borough_boundaries[borough]['lat'][1])
-        lon = np.random.uniform(borough_boundaries[borough]['lon'][0], borough_boundaries[borough]['lon'][1])
-        user_id = np.random.randint(1, 901)
+        lat = np.random.uniform(bounds['lat'][0], bounds['lat'][1])
+        lon = np.random.uniform(bounds['lon'][0], bounds['lon'][1])
+        user_id = user_ids[i]
         status = 'Accepted' if np.random.rand() > 0.05 else 'Declined'
+        merchant_id = merchant_ids[i]
 
-        # Append to the DataFrame
         transactions_df = transactions_df._append({
             'Transaction ID': transaction_id,
             'Date': date,
@@ -49,12 +58,11 @@ for borough, percentage in distributions.items():
             'Latitude': lat,
             'Longitude': lon,
             'User ID': user_id,
-            'Status': status
+            'Status': status,
+            'Merchant ID': merchant_id
         }, ignore_index=True)
 
-# Shuffle the DataFrame to mix transactions
+# Shuffle the DataFrame to mix transactions from different boroughs
 transactions_df = transactions_df.sample(frac=1).reset_index(drop=True)
-
 # Save the DataFrame to a CSV file
 transactions_df.to_csv('cc_transactions.csv', index=False)
-

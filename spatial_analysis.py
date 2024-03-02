@@ -28,7 +28,7 @@ def perform_spatial_join(transactions_csv, boroughs_geojson):
     boroughs_gdf = boroughs_gdf.to_crs("EPSG:4326")  # Ensure CRS matches transactions data
 
     # Perform the spatial join
-    joined_gdf = gpd.sjoin(transactions_gdf, boroughs_gdf, how="left", op="within")
+    joined_gdf = gpd.sjoin(transactions_gdf, boroughs_gdf, how="left", predicate="within")
 
     # Rename the column with borough names if necessary
     if 'boro_name' not in joined_gdf.columns and 'BoroName' in boroughs_gdf.columns:
@@ -36,11 +36,5 @@ def perform_spatial_join(transactions_csv, boroughs_geojson):
 
     # Drop any transactions that could not be joined with a borough
     joined_gdf = joined_gdf.dropna(subset=['boro_name'])
-
-
-    print(f"joined_gdf.columns = {joined_gdf.columns}")
-
-    # Check the first few rows after the join
-    print(joined_gdf.head())
 
     return joined_gdf
